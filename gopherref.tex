@@ -1,0 +1,27 @@
+\documentclass[packages]{combine}
+\title{Gopher Reference}
+\author{typeset by Kyle Isom}
+\include{preamble}
+
+\begin{document}
+\pagestyle{combine}
+\maketitle
+\clearpage
+\tableofcontents
+\clearpage
+
+\begin{papers}
+
+\coltoctitle{Go Language Spec}
+%\coltocauthor{Rob~Pike}
+\label{gospec}
+\import{spec}
+
+\coltoctitle{Writing Go Programs}
+%\coltocauthor{Paul~Graham}
+\label{writinggo}
+\import{writing}
+
+\end{papers}
+
+\end{document}

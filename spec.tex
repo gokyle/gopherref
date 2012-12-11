@@ -1,0 +1,180 @@
+\documentclass[UTF8]{article}
+
+\title{The Go Language Specification}
+\author{Go 1.0.3}
+\date{2012 September 23}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+This is a reference manual for the Go programming language. For
+more information and other documents, see \url{http://golang.org}.
+
+Go is a general-purpose language designed with systems programming
+in mind. It is strongly typed and garbage-collected and has explicit
+support for concurrent programming. Programs are constructed from
+packages, whose properties allow efficient management of dependencies.
+The existing implementations use a traditional compile/link model
+to generate executable binaries.
+
+The grammar is compact and regular, allowing for easy analysis by
+automatic tools such as integrated development environments.
+
+\section*{Notation}
+
+The syntax is specified using Extended Backus-Naur Form (EBNF):
+
+\begin{Verbatim}[frame=single]
+Production  = production_name "=" [ Expression ] "." .
+Expression  = Alternative { "|" Alternative } .
+Alternative = Term { Term } .
+Term        = production_name | token [ "…" token ]
+                              | Group | Option | Repetition .
+Group       = "(" Expression ")" .
+Option      = "[" Expression "]" .
+Repetition  = "{" Expression "}" .
+\end{Verbatim}
+
+Productions are expressions constructed from terms and the following operators, in increasing precedence:
+
+\begin{Verbatim}[frame=single]
+|   alternation
+()  grouping
+[]  option (0 or 1 times)
+{}  repetition (0 to n times)
+\end{Verbatim}
+
+Lower-case production names are used to identify lexical tokens.
+Non-terminals are in CamelCase. Lexical tokens are enclosed in
+double quotes "" or back quotes ``.
+
+The form a $\ldots$ b represents the set of characters from a through b
+as alternatives. The horizontal ellipsis $\ldots$ is also used elsewhere
+in the spec to informally denote various enumerations or code
+snippets that are not further specified. The character $\ldots$ (as opposed
+to the three characters ...) is not a token of the Go language.
+
+
+\section*{Source code representation}
+Source code is Unicode text encoded in
+\hyperref[UTF-8]{http://en.wikipedia.org/wiki/UTF-8}. The text is
+not canonicalized, so a single accented code point is distinct from
+the same character constructed from combining an accent and a letter;
+those are treated as two code points. For simplicity, this document
+will use the unqualified term character to refer to a Unicode code
+point in the source text.
+
+Each code point is distinct; for instance, upper and lower case
+letters are different characters.
+
+Implementation restriction: For compatibility with other tools, a
+compiler may disallow the NUL character (U+0000) in the source text.
+
+\subsection*{Characters}
+The following terms are used to denote specific Unicode character
+classes:
+
+\begin{Verbatim}[frame=single]
+newline        = /* the Unicode code point U+000A */ .
+unicode_char   = /* an arbitrary Unicode code point except newline */ .
+unicode_letter = /* a Unicode code point classified as "Letter" */ .
+unicode_digit  = /* a Unicode code point classified as "Decimal Digit" */ .
+\end{Verbatim}
+
+In \href{http://www.unicode.org/versions/Unicode6.0.0/}{The Unicode Standard 6.0},
+Section 4.5 "General Category" defines a set of character categories.
+Go treats those characters in category Lu, Ll, Lt, Lm, or Lo as
+Unicode letters, and those in category Nd as Unicode digits.
+
+\subsection*{Letters and Digits}
+The underscore character \_ (U+005F) is considered a letter.
+
+\begin{Verbatim}[frame=single]
+letter        = unicode_letter | "_" .
+decimal_digit = "0" … "9" .
+octal_digit   = "0" … "7" .
+hex_digit     = "0" … "9" | "A" … "F" | "a" … "f" .
+\end{Verbatim}
+
+\section*{Lexical elements}
+
+\subsection*{Comments}
+There are two forms of comments:
+
+\begin{enumerate}
+  \item \textit{Line comments} start with the character sequence
+  // and stop at the end of the line. A line comment acts like a
+  newline.
+  
+  \item \textit{General comments} start with the character
+  sequence /* and continue through the character sequence */. A
+  general comment containing one or more newlines acts like a
+  newline, otherwise it acts like a space.
+\end{enumerate}
+
+Comments do not nest.
+
+\subsection*{Tokens}
+Tokens form the vocabulary of the Go language. There are four
+classes: identifiers, keywords, operators and delimiters, and
+literals. White space, formed from spaces (U+0020), horizontal tabs
+(U+0009), carriage returns (U+000D), and newlines (U+000A), is
+ignored except as it separates tokens that would otherwise combine
+into a single token. Also, a newline or end of file may trigger the
+insertion of a semicolon. While breaking the input into tokens, the
+next token is the longest sequence of characters that form a valid
+token.
+
+\subsection*{Semicolons}
+The formal grammar uses semicolons ";" as terminators in a number
+of productions. Go programs may omit most of these semicolons using
+the following two rules:
+
+\begin{enumerate}
+
+  \item When the input is broken into tokens, a semicolon is
+  automatically inserted into the token stream at the end of a
+  non-blank line if the line's final token is
+
+  \begin{itemize}
+
+    \item an identifier
+
+    \item an integer, floating-point, imaginary, rune, or string
+    literal
+
+    \item one of the keywords break, continue, fallthrough, or
+    return
+
+    \item one of the operators and delimiters ++, --, ), ], or \}
+  \end{itemize}
+
+  \item To allow complex statements to occupy a single line, a
+  semicolon may be omitted before a closing ")" or "\}".
+
+\end{enumerate}
+
+To reflect idiomatic use, code examples in this document elide
+semicolons using these rules.
+
+\subsection*{Identifiers}
+Identifiers name program entities such as variables and types. An
+identifier is a sequence of one or more letters and digits. The
+first character in an identifier must be a letter.
+
+\begin{Verbatim}[frame=single]
+identifier = letter { letter | unicode_digit } .
+\end{Verbatim}
+
+\begin{Verbatim}[frame=single]
+a
+_x9
+ThisVariableIsExported
+αβ
+\end{Verbatim}
+
+Some identifiers are predeclared.
+
+
+\end{document}
