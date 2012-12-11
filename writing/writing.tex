@@ -1,0 +1,403 @@
+\documentclass[UTF-8]{article}
+\usepackage{fancyvrb}
+\usepackage{hyperref}
+
+\title{How to Write Go Code}
+\author{Go 1.0.3}
+
+\begin{document}
+\maketitle
+
+\section *{Introduction}
+This document demonstrates the development of a simple Go package
+and introduces the \href{http://golang.org/cmd/go/}{go} command,
+the standard way to fetch, build, and install Go packages and
+commands.
+
+\section*{Code organization}
+\subsection*{GOPATH and workspaces}
+
+One of Go's design goals is to make writing software easier. To
+that end, the go command doesn't use Makefiles or other configuration
+files to guide program construction. Instead, it uses the source
+code to find dependencies and determine build conditions. This means
+your source code and build scripts are always in sync; they are one
+and the same.
+
+The one thing you must do is set a \verb|GOPATH| environment variable.
+\verb|GOPATH| tells the go command (and other related tools) where to find
+and install the Go packages on your system.
+
+\verb|GOPATH| is a list of paths. It shares the syntax of your
+system's \verb|PATH| environment variable. A typical \verb|GOPATH|
+on a Unix system might look like this:
+
+\begin{Verbatim}[frame=single]
+GOPATH=/home/user/ext:/home/user/mygo
+\end{Verbatim}
+
+(On a Windows system use semicolons as the path separator instead of colons.)
+
+Each path in the list (in this case \verb|/home/user/ext| or
+\verb|/home/user/mygo|) specifies the location of a \textit{workspace}.
+A workspace contains Go source files and their associated package
+objects, and command executables. It has a prescribed structure of
+three subdirectories:
+
+\begin{itemize}
+  \item \verb|src| contains Go source files,
+  \item \verb|pkg| contains compiled package objects, and
+  \item \verb|bin| contains executable commands.
+\end{itemize}
+
+Subdirectories of the \verb|src| directory hold independent packages,
+and all source files (\verb|.go, .c, .h, and .s|) in each subdirectory
+are elements of that subdirectory's package.
+
+When building a program that imports the package "\verb|widget|"
+the \verb|go| command looks for \verb|src/pkg/widget| inside the
+Go root, and then—if the package source isn't found there—it searches
+for \verb|src/widget| inside each workspace in order.
+
+Multiple workspaces can offer some flexibility and convenience, but
+for now we'll concern ourselves with only a single workspace.
+
+Let's work through a simple example. First, create a \verb|$HOME/mygo|
+directory and its \verb|src| subdirectory:
+
+\begin{Verbatim}[frame=single]
+$ mkdir -p $HOME/mygo/src # create a place to put source code
+\end{Verbatim}
+
+Next, set it as the \verb|GOPATH|. You should also add the \verb|bin|
+subdirectory to your \verb|PATH| environment variable so that you
+can run the commands therein without specifying their full path.
+To do this, add the following lines to \verb|$HOME/.profile| (or
+equivalent):
+
+\begin{Verbatim}[frame=single]
+export GOPATH=$HOME/mygo
+export PATH=$PATH:$HOME/mygo/bin
+\end{Verbatim}
+
+\subsection*{Import paths}
+The standard packages are given short import paths such as "\verb|fmt|"
+and "\verb|net/http|" for convenience. For your own projects, it
+is important to choose a base import path that is unlikely to collide
+with future additions to the standard library or other external
+libraries.
+
+The best way to choose an import path is to use the location of
+your version control repository. For instance, if your source
+repository is at \verb|example.com| or \verb|code.google.com/p/example|,
+you should begin your package paths with that URL, as in
+"\verb|example.com/foo/bar|" or "\verb|code.google.com/p/example/foo/bar|".
+Using this convention, the \verb|go| command can automatically check
+out and build the source code by its import path alone.
+
+If you don't intend to install your code in this way, you should
+at least use a unique prefix like "\verb|widgets/|", as in
+"\verb|widgets/foo/bar|". A good rule is to use a prefix such as
+your company or project name, since it is unlikely to be used by
+another group.
+
+We'll use example/ as our base import path:
+
+\begin{Verbatim}[frame=single]
+$ mkdir -p $GOPATH/src/example
+\end{Verbatim}
+
+\pagebreak
+\subsection*{Package names}
+The first statement in a Go source file should be
+
+\begin{Verbatim}[frame=single]
+package name
+\end{Verbatim}
+
+where \textit{name} is the package's default name for imports. (All
+files in a package must use the same \textit{name}.)
+
+Go's convention is that the package name is the last element of the
+import path: the package imported as "\verb|crypto/rot13|" should
+be named \verb|rot13|. There is no requirement that package names
+be unique across all packages linked into a single binary, only
+that the import paths (their full file names) be unique.
+
+Create a new package under \verb|example| called \verb|newmath|:
+
+\begin{Verbatim}[frame=single]
+$ cd $GOPATH/src/example
+$ mkdir newmath
+\end{Verbatim}
+
+Then create a file named \verb|$GOPATH/src/example/newmath/sqrt.go|
+containing the following Go code:
+
+\begin{Verbatim}[frame=single]
+// Package newmath is a trivial example package.
+package newmath
+
+// Sqrt returns an approximation to the square root of x.
+func Sqrt(x float64) float64 {
+        // This is a terrible implementation.
+        // Real code should import "math" and use math.Sqrt.
+        z := 0.0
+        for i := 0; i < 1000; i++ {
+                z -= (z*z - x) / (2 * x)
+        }
+        return z
+}
+\end{Verbatim}
+
+This package is imported by the path name of the directory it's in,
+starting after the \verb|src| component:
+
+\begin{Verbatim}[frame=single]
+import "example/newmath"
+\end{Verbatim}
+
+See \href{http://golang.org/doc/effective_go.html#names}{Effective
+Go} to learn more about Go's naming conventions.
+
+\pagebreak
+\section*{Building and Installing}
+The \verb|go| command comprises several subcommands, the most central
+being \verb|install|. Running \verb|go install| \textit{importpath}
+builds and installs a package and its dependencies.
+
+To "install a package" means to write the package object or executable
+command to the \verb|pkg| or \verb|bin| subdirectory of the workspace
+in which the source resides.
+
+\subsection*{Building a package}
+
+To build and install the newmath package, type
+
+\begin{Verbatim}[frame=single]
+$ go install example/newmath
+\end{Verbatim}
+
+This command will produce no output if the package and its dependencies
+are built and installed correctly.
+
+As a convenience, the \verb|go| command will assume the current
+directory if no import path is specified on the command line. This
+sequence of commands has the same effect as the one above:
+
+\begin{Verbatim}[frame=single]
+$ cd $GOPATH/src/example/newmath
+$ go install
+\end{Verbatim}
+
+The resulting workspace directory tree (assuming we're running Linux
+on a 64-bit system) looks like this:
+
+\begin{Verbatim}[frame=single]
+pkg/
+    linux_amd64/
+        example/
+            newmath.a  # package object
+src/
+    example/
+        newmath/
+            sqrt.go    # package source
+\end{Verbatim}
+
+\subsection*{Building a command}
+The \verb|go| command treats code belonging to package main as an
+executable command and installs the package binary to the \verb|GOPATH|'s
+\verb|bin| subdirectory.
+
+Add a command named \verb|hello| to the source tree. First create
+the \verb|example/hello| directory:
+
+\begin{Verbatim}[frame=single]
+$ cd $GOPATH/src/example
+$ mkdir hello
+\end{Verbatim}
+
+Then create the file \verb|$GOPATH/src/example/hello/hello.go|
+containing the following Go code.
+
+\begin{Verbatim}[frame=single]
+// Hello is a trivial example of a main package.
+package main
+
+import (
+        "example/newmath"
+        "fmt"
+)
+
+func main() {
+        fmt.Printf("Hello, world.  Sqrt(2) = %v\n", newmath.Sqrt(2))
+}
+\end{Verbatim}
+
+Next, run \verb|go install|, which builds and installs the binary
+to \verb|$GOPATH/bin| (or \verb|$GOBIN|, if set; to simplify
+presentation, this document assumes \verb|GOBIN| is unset):
+
+\begin{Verbatim}[frame=single]
+$ go install example/hello
+\end{Verbatim}
+
+To run the program, invoke it by name as you would any other command:
+
+\begin{Verbatim}[frame=single]
+$ $GOPATH/bin/hello
+Hello, world.  Sqrt(2) = 1.414213562373095
+\end{Verbatim}
+
+If you added \verb|$HOME/mygo/bin| to your \verb|PATH|, you may
+omit the path to the executable:
+
+\begin{Verbatim}[frame=single]
+$ hello
+Hello, world.  Sqrt(2) = 1.414213562373095
+\end{Verbatim}
+
+The workspace directory tree now looks like this:
+
+\begin{Verbatim}[frame=single]
+bin/
+    hello              # command executable
+pkg/
+    linux_amd64/ 
+        example/
+            newmath.a  # package object
+src/
+    example/
+        hello/
+            hello.go   # command source
+        newmath/
+            sqrt.go    # package source
+\end{Verbatim}
+
+The \verb|go| command also provides a \verb|build| command, which
+is like \verb|install| except it builds all objects in a temporary
+directory and does not install them under \verb|pkg| or \verb|bin|.
+When building a command an executable named after the last element
+of the import path is written to the current directory. When building
+a package, \verb|go build| serves merely to test that the package
+and its dependencies can be built. (The resulting package object
+is thrown away.)
+
+\section*{Testing}
+Go has a lightweight test framework composed of the \verb|go test|
+command and the \verb|testing| package.
+
+You write a test by creating a file with a name ending in \verb|_test.go|
+that contains functions named \verb|TestXXX| with signature 
+\verb|func (t *testing.T)|. The test framework runs each such function;
+if the function calls a failure function such as \verb|t.Error| or
+\verb|t.Fail|, the test is considered to have failed.
+
+Add a test to the \verb|newmath| package by creating the file
+\verb|$GOPATH/src/example/newmath/sqrt_test.go| containing the
+following Go code.
+
+\begin{Verbatim}[frame=single]
+package newmath
+
+import "testing"
+
+func TestSqrt(t *testing.T) {
+        const in, out = 4, 2
+        if x := Sqrt(in); x != out {
+                t.Errorf("Sqrt(%v) = %v, want %v", in, x, out)
+        }
+}
+\end{Verbatim}
+
+Now run the test with \verb|go test|:
+
+\begin{Verbatim}[frame=single]
+$ go test example/newmath
+ok      example/newmath 0.165s
+\end{Verbatim}
+
+Run go help test and see the \href{http://golang.org/pkg/testing/}{testing
+package documentation} for more detail.
+
+\section*{Remote packages}
+An import path can describe how to obtain the package source code
+using a revision control system such as Git or Mercurial. The go
+command uses this property to automatically fetch packages from
+remote repositories. For instance, the examples described in this
+document are also kept in a Mercurial repository hosted at Google
+Code, code.google.com/p/go.example. If you include the repository
+URL in the package's import path, \verb|go get| will fetch, build,
+and install it automatically:
+
+\begin{Verbatim}[frame=single]
+$ go get code.google.com/p/go.example/hello
+$ $GOPATH/bin/hello
+Hello, world.  Sqrt(2) = 1.414213562373095
+\end{Verbatim}
+
+If the specified package is not present in a workspace, go get will
+place it inside the first workspace specified by \verb|GOPATH|. (If
+the package does already exist, \verb|go get| skips the remote fetch
+and behaves the same as \verb|go install|.)
+
+After issuing the above \verb|go geti| command, the workspace
+directory tree should now now look like this:
+
+\begin{Verbatim}[frame=single]
+bin/
+    hello                 # command executable
+pkg/
+    linux_amd64/ 
+        code.google.com/p/go.example/
+            newmath.a     # package object
+        example/
+            newmath.a     # package object
+src/
+     code.google.com/p/go.example/
+         hello/
+             hello.go      # command source
+         newmath/
+             sqrt.go       # package source
+             sqrt_test.go  # test source
+     example/
+         hello/
+             hello.go      # command source
+         newmath/
+             sqrt.go       # package source
+             sqrt_test.go  # test source
+\end{Verbatim}
+
+The \verb|hello| command hosted at Google Code depends on the
+\verb|newmath| package within the same repository. The imports in
+\verb|hello.go| file use the same import path convention, so the
+\verb|go get| command is able to locate and install the dependent
+package, too.
+
+\begin{Verbatim}[frame=single]
+import "code.google.com/p/go.example/newmath"
+\end{Verbatim}
+
+This convention is the easiest way to make your Go packages available
+for others to use. The \href{http://godashboard.appspot.com/}{Go
+Project Dashboard} is a list of external Go projects including
+programs and libraries.
+
+For more information on using remote repositories with the \verb|go|
+command, see \verb|go help remote|.
+
+\section*{Further reading}
+
+See \href{http://golang.org/doc/effective_go.html}{Effective Go}
+for tips on writing clear, idiomatic Go code.
+
+\noindent Take \href{http://tour.golang.org/}{A Tour of Go} to learn the
+language proper.
+
+\noindent Visit the \href{http://golang.org/doc/#articles}{documentation page}
+for a set of in-depth articles about the Go language and its libraries
+and tools.
+
+
+
+\end{document}
