@@ -1,10 +1,7 @@
-TARG=gopherref.pdf
+TARG=gopherref
 
-$TARG:V:
-
-%.pdf:  %.tex
-#    latex $stem.tex
-    xelatex $stem.tex
+$TARG.pdf::$TARG.tex
+    xelatex $TARG.tex
 
 clean:V:
     rm -f *.log *.aux *.out
