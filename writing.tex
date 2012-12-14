@@ -1,10 +1,7 @@
-\documentclass{article}
-
-\title{How to Write Go Code}
-\author{Go 1.0.3}
-
-\begin{document}
-\maketitle
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{How to Write Go Code}
+\chapter*{How to Write Go Code}
 
 \section *{Introduction}
 This document demonstrates the development of a simple Go package
@@ -105,7 +102,6 @@ We'll use example/ as our base import path:
 $ mkdir -p $GOPATH/src/example
 \end{Verbatim}
 
-\pagebreak
 \subsection*{Package names}
 The first statement in a Go source file should be
 
@@ -158,7 +154,6 @@ import "example/newmath"
 See \href{http://golang.org/doc/effective_go.html#names}{Effective
 Go} to learn more about Go's naming conventions.
 
-\pagebreak
 \section*{Building and Installing}
 The \verb|go| command comprises several subcommands, the most central
 being \verb|install|. Running \verb|go install| \textit{importpath}
@@ -395,7 +390,3 @@ language proper.
 \noindent Visit the \href{http://golang.org/doc/#articles}{documentation page}
 for a set of in-depth articles about the Go language and its libraries
 and tools.
-
-
-
-\end{document}
