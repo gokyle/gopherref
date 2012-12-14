@@ -1,19 +1,20 @@
-\documentclass[letterpaper,11pt]{book}
+\documentclass{book}
 \title{Gopher Reference}
 \author{typeset by Kyle Isom}
 \include{preamble}
 
 \begin{document}
 \maketitle
-\clearpage
-\tableofcontents
-\clearpage
+\frontmatter
+        \clearpage
+        \setcounter{tocdepth}{0}
+        \tableofcontents
+        \clearpage
 
-\addcontentsline{toc}{section}{Effective Go}
+\mainmatter
 \input{writing}
-\addcontentsline{toc}{section}{Go Language Specification}
-\include{effective}
-\addcontentsline{toc}{section}{How to Write Go Code}
-\include{spec}
+\input{effective}
+\input{spec}
+\backmatter
 
 \end{document}

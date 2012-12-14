@@ -1,3 +1,8 @@
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Go Language Specification}
+\chapter*{Go Language Specification}
+
 \section*{Introduction}
 
 This is a reference manual for the Go programming language. For more
@@ -147,12 +152,11 @@ using the following two rules:
     rune, or
     string literal
   \item
-    one of the keywords} \texttt{break,
+    one of the keywords \texttt{break},
     \texttt{continue}, \texttt{fallthrough}, or \texttt{return}
   \item
-    one of the \hyperref[Operators\_and\_Delimiters]{operators and
-    delimiters} \texttt{++}, \texttt{-{}-}, \texttt{)}, \texttt{{]}}, or
-    \texttt{\}}
+    one of the operators and delimiters \texttt{++}, \texttt{-{}-},
+    \texttt{)}, \texttt{]}, or \texttt{\}}
   \end{itemize}
 \item
   To allow complex statements to occupy a single line, a semicolon may
@@ -440,21 +444,16 @@ constants}, \emph{floating-point constants}, \emph{complex constants},
 and \emph{string constants}. Character, integer, floating-point, and
 complex constants are collectively called \emph{numeric constants}.
 
-A constant value is represented by a rune,
-integer,
-floating-point,
-imaginary, or
-string literal, an identifier denoting a
-constant, a constant expression, a
-conversion with a result that is a constant, or
-the result value of some built-in functions such as
+A constant value is represented by a rune, integer, floating-point,
+imaginary, or string literal, an identifier denoting a constant, a
+constant expression, a conversion with a result that is a constant,
+or the result value of some built-in functions such as
 \texttt{unsafe.Sizeof} applied to any value, \texttt{cap} or
-\texttt{len} applied to \hyperref[Length\_and\_capacity]{some
-expressions}, \texttt{real} and \texttt{imag} applied to a complex
-constant and \texttt{complex} applied to numeric constants. The boolean
-truth values are represented by the predeclared constants \texttt{true}
-and \texttt{false}. The predeclared identifier iota
-denotes an integer constant.
+\texttt{len} applied to some expressions, \texttt{real} and
+\texttt{imag} applied to a complex constant and \texttt{complex}
+applied to numeric constants. The boolean truth values are represented
+by the predeclared constants \texttt{true} and \texttt{false}. The
+predeclared identifier iota denotes an integer constant.
 
 In general, complex constants are a form of
 constant expression and are discussed
@@ -513,11 +512,10 @@ evaluating constant expressions.
 
 \section*{Types}
 
-A type determines the set of values and operations specific to values of
-that type. A type may be specified by a (possibly
-qualified}) \emph{type name
-(§Type declarations) or a \emph{type
-literal}, which composes a new type from previously declared types.
+A type determines the set of values and operations specific to
+values of that type. A type may be specified by a (possibly qualified)
+\emph{type name} (§Type declarations) or a \emph{type literal},
+which composes a new type from previously declared types.
 
 \begin{Verbatim}[frame=single]
 Type      = TypeName | TypeLit | "(" Type ")" .
@@ -796,7 +794,7 @@ struct {
 }
 \end{Verbatim}
 
-A field or method} \texttt{f of an
+A field or method \texttt{f} of an
 anonymous field in a struct \texttt{x} is called \emph{promoted} if
 \texttt{x.f} is a legal selector that denotes that
 field or method \texttt{f}.
@@ -811,7 +809,7 @@ methods are included in the method set of the struct as follows:
 \begin{itemize}
 \item
   If \texttt{S} contains an anonymous field \texttt{T}, the
-  method sets} of \texttt{S} and \texttt{*S
+  method sets of \texttt{S} and \texttt{*S}
   both include promoted methods with receiver \texttt{T}. The method set
   of \texttt{*S} also includes promoted methods with receiver
   \texttt{*T}.
@@ -1180,11 +1178,11 @@ A value \texttt{x} is \emph{assignable} to a variable of type \texttt{T}
   \texttt{x}'s type is identical to \texttt{T}.
 \item
   \texttt{x}'s type \texttt{V} and \texttt{T} have identical
-  underlying types} and at least one of \texttt{V or
+  underlying types and at least one of \texttt{V} or
   \texttt{T} is not a named type.
 \item
   \texttt{T} is an interface type and \texttt{x}
-  implements} \texttt{T.
+  implements \texttt{T}.
 \item
   \texttt{x} is a bidirectional channel value, \texttt{T} is a channel
   type, \texttt{x}'s type \texttt{V} and \texttt{T} have identical
@@ -1198,8 +1196,7 @@ A value \texttt{x} is \emph{assignable} to a variable of type \texttt{T}
   by a value of type \texttt{T}.
 \end{itemize}
 
-Any value may be assigned to the \hyperref[Blank\_identifier]{blank
-identifier}.
+Any value may be assigned to the blank identifier.
 
 \section*{Blocks}
 
@@ -1217,7 +1214,7 @@ blocks:
 \item
   The \emph{universe block} encompasses all Go source text.
 \item
-  Each package} has a \emph{package block
+  Each package has a \emph{package} block
   containing all Go source text for that package.
 \item
   Each file has a \emph{file block} containing all Go source text in
@@ -1286,15 +1283,14 @@ specify the default package name for import declarations.
 
 \subsection*{Label scopes}
 
-Labels are declared by \hyperref[Labeled\_statements]{labeled
-statements} and are used in the \texttt{break}, \texttt{continue}, and
-\texttt{goto} statements (§\hyperref[Break\_statements]{Break
-statements}, §Continue statements,
-§Goto statements). It is illegal to define
-a label that is never used. In contrast to other identifiers, labels are
-not block scoped and do not conflict with identifiers that are not
-labels. The scope of a label is the body of the function in which it is
-declared and excludes the body of any nested function.
+Labels are declared by labeled statements and are used in the
+\texttt{break}, \texttt{continue}, and \texttt{goto} statements
+(\texttt{break} statements, \texttt{continue} statements,
+\texttt{goto} statements). It is illegal to define a label that is never
+used. In contrast to other identifiers, labels are not block scoped
+and do not conflict with identifiers that are not labels. The scope
+of a label is the body of the function in which it is declared and
+excludes the body of any nested function.
 
 \subsection*{Blank identifier}
 
@@ -1961,7 +1957,7 @@ f.p[i].x()
 
 \subsection*{Selectors}
 
-For a primary expression} \texttt{x
+For a primary expression \texttt{x}
 that is not a package name, the
 \emph{selector expression}
 
@@ -1974,12 +1970,11 @@ sometimes \texttt{*x}; see below). The identifier \texttt{f} is called
 the (field or method) \emph{selector}; it must not be the
 blank identifier. The type of the selector
 expression is the type of \texttt{f}. If \texttt{x} is a package name,
-see the section on \hyperref[Qualified\_identifiers]{qualified
-identifiers}.
+see the section on qualified identifiers.
 
 A selector \texttt{f} may denote a field or method \texttt{f} of a type
 \texttt{T}, or it may refer to a field or method \texttt{f} of a nested
-anonymous field} of \texttt{T. The number of
+anonymous field of \texttt{T}. The number of
 anonymous fields traversed to reach \texttt{f} is called its
 \emph{depth} in \texttt{T}. The depth of a field or method \texttt{f}
 declared in \texttt{T} is zero. The depth of a field or method
@@ -2069,7 +2064,7 @@ indexed by \texttt{x}. The value \texttt{x} is called the \emph{index}
 or \emph{map key}, respectively. The following rules apply:
 
 For \texttt{a} of type \texttt{A} or \texttt{*A} where \texttt{A} is an
-array type}, or for \texttt{a of type
+array type, or for \texttt{a} of type
 \texttt{S} where \texttt{S} is a slice type:
 
 \begin{itemize}
@@ -2189,8 +2184,8 @@ as the array.
 
 \subsection*{Type assertions}
 
-For an expression \texttt{x} of \hyperref[Interface\_types]{interface
-type} and a type \texttt{T}, the primary expression
+For an expression \texttt{x} of interface type and a type \texttt{T},
+the primary expression
 
 \begin{Verbatim}[frame=single]
 x.(T)
@@ -2201,11 +2196,10 @@ asserts that \texttt{x} is not \texttt{nil} and that the value stored in
 a \emph{type assertion}.
 
 More precisely, if \texttt{T} is not an interface type, \texttt{x.(T)}
-asserts that the dynamic type of \texttt{x} is
-identical} to the type \texttt{T. If
-\texttt{T} is an interface type, \texttt{x.(T)} asserts that the dynamic
-type of \texttt{x} implements the interface \texttt{T}
-(§Interface types).
+asserts that the dynamic type of \texttt{x} is identical to the
+type \texttt{T}. If \texttt{T} is an interface type, \texttt{x.(T)}
+asserts that the dynamic type of \texttt{x} implements the interface
+\texttt{T} (§Interface types).
 
 If the type assertion holds, the value of the expression is the value
 stored in \texttt{x} and its type is \texttt{T}. If the type assertion
@@ -2223,14 +2217,13 @@ v, ok := x.(T)
 var v, ok = x.(T)
 \end{Verbatim}
 
-the result of the assertion is a pair of values with types
-\texttt{(T, bool)}. If the assertion holds, the expression returns the
-pair \texttt{(x.(T), true)}; otherwise, the expression returns
-\texttt{(Z, false)} where \texttt{Z} is the
-zero value} for type \texttt{T. No run-time
-panic occurs in this case. The type assertion in this construct thus
-acts like a function call returning a value and a boolean indicating
-success. (§Assignments)
+the result of the assertion is a pair of values with types \texttt{(T,
+bool)}. If the assertion holds, the expression returns the pair
+\texttt{(x.(T), true)}; otherwise, the expression returns \texttt{(Z,
+false)} where \texttt{Z} is the zero value for type \texttt{T}. No
+run-time panic occurs in this case. The type assertion in this
+construct thus acts like a function call returning a value and a
+boolean indicating success. (§Assignments)
 
 \subsection*{Calls}
 
@@ -2289,10 +2282,10 @@ if Join(Split(value, len(value)/2)) != value {
 \end{Verbatim}
 
 A method call \texttt{x.m()} is valid if the
-method set} of (the type of) \texttt{x contains
+method set of (the type of) \texttt{x} contains
 \texttt{m} and the argument list can be assigned to the parameter list
 of \texttt{m}. If \texttt{x} is
-addressable} and \texttt{\&x's method set
+addressable and \texttt{\&x}'s method set
 contains \texttt{m}, \texttt{x.m()} is shorthand for \texttt{(\&x).m()}:
 
 \begin{Verbatim}[frame=single]
@@ -2309,7 +2302,7 @@ within the function the argument is equivalent to a parameter of type
 \texttt{{[}{]}T}. At each call of \texttt{f}, the argument passed to the
 final parameter is a new slice of type \texttt{{[}{]}T} whose successive
 elements are the actual arguments, which all must be
-assignable} to the type \texttt{T. The length
+assignable to the type \texttt{T}. The length
 of the slice is therefore the number of arguments bound to the final
 parameter and may differ for each call site.
 
@@ -2521,8 +2514,7 @@ For integer operands, the unary operators \texttt{+}, \texttt{-}, and
 For floating-point and complex numbers, \texttt{+x} is the same as
 \texttt{x}, while \texttt{-x} is the negation of \texttt{x}. The result
 of a floating-point or complex division by zero is not specified beyond
-the IEEE-754 standard; whether a \hyperref[Run\_time\_panics]{run-time
-panic} occurs is implementation-specific.
+the IEEE-754 standard; whether a run-time panic occurs is implementation-specific.
 
 \subsection*{Integer overflow}
 
@@ -2588,8 +2580,7 @@ These terms and the result of the comparisons are defined as follows:
 \item
   Channel values are comparable. Two channel values are equal if they
   were created by the same call to \texttt{make}
-  (§\hyperref[Making\_slices\_maps\_and\_channels]{Making slices, maps,
-  and channels}) or if both have value \texttt{nil}.
+  or if both have value \texttt{nil}.
 \item
   Interface values are comparable. Two interface values are equal if
   they have identical dynamic types and equal
@@ -2657,8 +2648,7 @@ operand must be \emph{addressable}, that is, either a variable, pointer
 indirection, or slice indexing operation; or a field selector of an
 addressable struct operand; or an array indexing operation of an
 addressable array. As an exception to the addressability requirement,
-\texttt{x} may also be a \hyperref[Composite\_literals]{composite
-literal}.
+\texttt{x} may also be a composite literal.
 
 For an operand \texttt{x} of pointer type \texttt{*T}, the pointer
 indirection \texttt{*x} denotes the value of type \texttt{T} pointed to
@@ -2813,7 +2803,7 @@ If the type starts with an operator it must be parenthesized:
 (<-chan int)(c)  // c is converted to (<-chan int)
 \end{Verbatim}
 
-A constant} value \texttt{x can be converted to
+A constant value \texttt{x} can be converted to
 type \texttt{T} in any of these cases:
 
 \begin{itemize}
@@ -2822,9 +2812,7 @@ type \texttt{T} in any of these cases:
 \item
   \texttt{x} is an integer constant and \texttt{T} is a
   string type. The same rule as for
-  non-constant \texttt{x} applies in this case
-  (§\hyperref[Conversions\_to\_and\_from\_a\_string\_type]{Conversions
-  to and from a string type}).
+  non-constant \texttt{x} applies in this case.
 \end{itemize}
 
 Converting a constant yields a typed constant as result.
@@ -2847,7 +2835,7 @@ any of these cases:
 
 \begin{itemize}
 \item
-  \texttt{x} is assignable} to \texttt{T.
+  \texttt{x} is assignable to \texttt{T}.
 \item
   \texttt{x}'s type and \texttt{T} have identical
   underlying types.
@@ -3156,12 +3144,11 @@ Channel  = Expression .
 \end{Verbatim}
 
 Both the channel and the value expression are evaluated before
-communication begins. Communication blocks until the send can proceed. A
-send on an unbuffered channel can proceed if a receiver is ready. A send
-on a buffered channel can proceed if there is room in the buffer. A send
-on a closed channel proceeds by causing a
-run-time panic}. A send on a \texttt{nil
-channel blocks forever.
+communication begins. Communication blocks until the send can
+proceed. A send on an unbuffered channel can proceed if a receiver
+is ready. A send on a buffered channel can proceed if there is room
+in the buffer. A send on a closed channel proceeds by causing a
+run-time panic. A send on a \texttt{nil} channel blocks forever.
 
 \begin{Verbatim}[frame=single]
 ch <- 3
@@ -3170,7 +3157,7 @@ ch <- 3
 \subsection*{IncDec statements}
 
 The ``++'' and ``--'' statements increment or decrement their operands
-by the untyped constant} \texttt{1. As with an
+by the untyped constant \texttt{1}. As with an
 assignment, the operand must be
 addressable or a map index expression.
 
@@ -3584,8 +3571,7 @@ The iteration values are assigned to the respective iteration variables
 as in an assignment statement.
 
 The iteration variables may be declared by the ``range'' clause using a
-form of \hyperref[Short\_variable\_declarations]{short variable
-declaration} (\texttt{:=}). In this case their types are set to the
+form of short variable declaration (\texttt{:=}). In this case their types are set to the
 types of the respective iteration values and their
 scope ends at the end of the
 ``for'' statement; they are re-used in each iteration. If the iteration
@@ -3819,8 +3805,7 @@ L:
 \subsection*{Continue statements}
 
 A ``continue'' statement begins the next iteration of the innermost
-``for'' loop at its post statement (§\hyperref[For\_statements]{For
-statements}).
+``for'' loop at its post statement.
 
 \begin{Verbatim}[frame=single]
 ContinueStmt = "continue" [ Label ] .
@@ -3862,14 +3847,14 @@ label inside that block. For instance, this example:
 \begin{Verbatim}[frame=single]
 if n%2 == 1 {
     goto L1
-}
+\}
 for n > 0 {
     f()
     n--
 L1:
     f()
     n--
-}
+\}
 \end{Verbatim}
 
 is erroneous because the label \texttt{L1} is inside the ``for''
@@ -3946,15 +3931,14 @@ BuiltinArgs = Type [ "," ExpressionList ] | ExpressionList .
 \subsection*{Close}
 
 For a channel \texttt{c}, the built-in function \texttt{close(c)}
-records that no more values will be sent on the channel. It is an error
-if \texttt{c} is a receive-only channel. Sending to or closing a closed
-channel causes a run-time panic. Closing
-the nil channel also causes a \hyperref[Run\_time\_panics]{run-time
-panic}. After calling \texttt{close}, and after any previously sent
-values have been received, receive operations will return the zero value
-for the channel's type without blocking. The multi-valued
-receive operation returns a received value
-along with an indication of whether the channel is closed.
+records that no more values will be sent on the channel. It is an
+error if \texttt{c} is a receive-only channel. Sending to or closing
+a closed channel causes a run-time panic. Closing the nil channel
+also causes a run-time panic. After calling \texttt{close}, and
+after any previously sent values have been received, receive
+operations will return the zero value for the channel's type without
+blocking. The multi-valued receive operation returns a received
+value along with an indication of whether the channel is closed.
 
 \subsection*{Length and capacity}
 
@@ -3987,21 +3971,19 @@ relationship holds:
 
 The length and capacity of a \texttt{nil} slice, map, or channel are 0.
 
-The expression \texttt{len(s)} is constant if
-\texttt{s} is a string constant. The expressions \texttt{len(s)} and
-\texttt{cap(s)} are constants if the type of \texttt{s} is an array or
-pointer to an array and the expression \texttt{s} does not contain
-channel receives or
-function calls}; in this case \texttt{s is not
-evaluated. Otherwise, invocations of \texttt{len} and \texttt{cap} are
-not constant and \texttt{s} is evaluated.
+The expression \texttt{len(s)} is constant if \texttt{s} is a string
+constant. The expressions \texttt{len(s)} and \texttt{cap(s)} are
+constants if the type of \texttt{s} is an array or pointer to an
+array and the expression \texttt{s} does not contain channel receives
+or function calls; in this case \texttt{s} is not evaluated.
+Otherwise, invocations of \texttt{len} and \texttt{cap} are not
+constant and \texttt{s} is evaluated.
 
 \subsection*{Allocation}
 
 The built-in function \texttt{new} takes a type \texttt{T} and returns a
 value of type \texttt{*T}. The memory is initialized as described in the
-section on initial values (§\hyperref[The\_zero\_value]{The zero
-value}).
+section on initial values.
 
 \begin{Verbatim}[frame=single]
 new(T)
@@ -4042,7 +4024,7 @@ make(T, n)       channel    asynchronous channel of type T, buffer size n
 \end{Verbatim}
 
 The arguments \texttt{n} and \texttt{m} must be of integer type. A
-run-time panic} occurs if \texttt{n is
+run-time panic occurs if \texttt{n} is
 negative or larger than \texttt{m}, or if \texttt{n} or \texttt{m}
 cannot be represented by an \texttt{int}.
 
@@ -4057,17 +4039,15 @@ m := make(map[string]int, 100)  // map with initial space for 100 elements
 
 Two built-in functions assist in common slice operations.
 
-The variadic} function \texttt{append
-appends zero or more values \texttt{x} to \texttt{s} of type \texttt{S},
-which must be a slice type, and returns the resulting slice, also of
-type \texttt{S}. The values \texttt{x} are passed to a parameter of type
-\texttt{...T} where \texttt{T} is the \hyperref[Slice\_types]{element
-type} of \texttt{S} and the respective
-\hyperref[Passing\_arguments\_to\_...\_parameters]{parameter passing
-rules} apply. As a special case, \texttt{append} also accepts a first
-argument assignable to type \texttt{{[}{]}byte} with a second argument
-of string type followed by \texttt{...}. This form appends the bytes of
-the string.
+The variadic function \texttt{append} appends zero or more values
+\texttt{x} to \texttt{s} of type \texttt{S}, which must be a slice
+type, and returns the resulting slice, also of type \texttt{S}. The
+values \texttt{x} are passed to a parameter of type \texttt{...T}
+where \texttt{T} is the element type of \texttt{S} and the respective
+parameter passing rules apply. As a special case, \texttt{append}
+also accepts a first argument assignable to type \texttt{{[}{]}byte}
+with a second argument of string type followed by \texttt{...}.
+This form appends the bytes of the string.
 
 \begin{Verbatim}[frame=single]
 append(s S, x ...T) S  // T is the element type of S
@@ -4094,7 +4074,7 @@ b = append(b, "bar"...)  // append string contents      b == []byte{'b', 'a', 'r
 The function \texttt{copy} copies slice elements from a source
 \texttt{src} to a destination \texttt{dst} and returns the number of
 elements copied. Source and destination may overlap. Both arguments must
-have identical} element type \texttt{T and
+have identical element type \texttt{T} and
 must be assignable to a slice of type
 \texttt{{[}{]}T}. The number of elements copied is the minimum of
 \texttt{len(src)} and \texttt{len(dst)}. As a special case,
@@ -4121,7 +4101,7 @@ n3 := copy(b, "Hello, World!")  // n3 == 5, b == []byte("Hello")
 \subsection*{Deletion of map elements}
 
 The built-in function \texttt{delete} removes the element with key
-\texttt{k} from a map} \texttt{m. The type of
+\texttt{k} from a map \texttt{m}. The type of
 \texttt{k} must be assignable to the key type
 of \texttt{m}.
 
@@ -4178,16 +4158,16 @@ func panic(interface{})
 func recover() interface{}
 \end{Verbatim}
 
-When a function \texttt{F} calls \texttt{panic}, normal execution of
-\texttt{F} stops immediately. Any functions whose execution was
-deferred} by the invocation of \texttt{F
-are run in the usual way, and then \texttt{F} returns to its caller. To
-the caller, \texttt{F} then behaves like a call to \texttt{panic},
-terminating its own execution and running deferred functions. This
-continues until all functions in the goroutine have ceased execution, in
-reverse order. At that point, the program is terminated and the error
-condition is reported, including the value of the argument to
-\texttt{panic}. This termination sequence is called \emph{panicking}.
+When a function \texttt{F} calls \texttt{panic}, normal execution
+of \texttt{F} stops immediately. Any functions whose execution was
+deferred by the invocation of \texttt{F} are run in the usual way,
+and then \texttt{F} returns to its caller. To the caller, \texttt{F}
+then behaves like a call to \texttt{panic}, terminating its own
+execution and running deferred functions. This continues until all
+functions in the goroutine have ceased execution, in reverse order.
+At that point, the program is terminated and the error condition
+is reported, including the value of the argument to \texttt{panic}.
+This termination sequence is called \emph{panicking}.
 
 \begin{Verbatim}[frame=single]
 panic(42)
@@ -4266,8 +4246,7 @@ PackageClause  = "package" PackageName .
 PackageName    = identifier .
 \end{Verbatim}
 
-The PackageName must not be the \hyperref[Blank\_identifier]{blank
-identifier}.
+The PackageName must not be the blank identifier.
 
 \begin{Verbatim}[frame=single]
 package math
@@ -4281,10 +4260,8 @@ package inhabit the same directory.
 
 An import declaration states that the source file containing the
 declaration depends on functionality of the \emph{imported} package
-(\hyperref[Program\_initialization\_and\_execution]{§Program
-initialization and execution}) and it enables access to
-exported identifiers of that package.
-The import names an identifier (PackageName) to be used for access and
+and it enables access to exported identifiers of that package.  The
+import names an identifier (PackageName) to be used for access and
 an ImportPath that specifies the package to be imported.
 
 \begin{Verbatim}[frame=single]
@@ -4293,16 +4270,14 @@ ImportSpec       = [ "." | PackageName ] ImportPath .
 ImportPath       = string_lit .
 \end{Verbatim}
 
-The PackageName is used in \hyperref[Qualified\_identifiers]{qualified
-identifiers} to access exported identifiers of the package within the
-importing source file. It is declared in the \hyperref[Blocks]{file
-block}. If the PackageName is omitted, it defaults to the identifier
-specified in the package clause of the
-imported package. If an explicit period (\texttt{.}) appears instead of
-a name, all the package's exported identifiers declared in that
-package's package block will be declared in the
-importing source file's file block and can be accessed without a
-qualifier.
+The PackageName is used in qualified identifiers to access exported
+identifiers of the package within the importing source file. It is
+declared in the file block. If the PackageName is omitted, it
+defaults to the identifier specified in the package clause of the
+imported package. If an explicit period (\texttt{.}) appears instead
+of a name, all the package's exported identifiers declared in that
+package's package block will be declared in the importing source
+file's file block and can be accessed without a qualifier.
 
 The interpretation of the ImportPath is implementation-dependent but it
 is typically a substring of the full file name of the compiled package

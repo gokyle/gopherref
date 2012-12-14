@@ -1,13 +1,14 @@
 PDFGEN := xelatex
 VIEWER := open
 SOURCE := gopherref
-CHAPTERS := spec.tex writing.tex effective.tex
+CHAPTERS := preamble.tex spec.tex writing.tex effective.tex
 
 all: pdf view
 
 pdf: $(SOURCE).pdf
 
 $(SOURCE).pdf: $(SOURCE).tex $(CHAPTERS)
+	xelatex $(SOURCE).tex
 	xelatex $(SOURCE).tex
 	$(PDFGEN) $(SOURCE).tex
 
