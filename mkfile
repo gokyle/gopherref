@@ -7,7 +7,9 @@ $TARG.pdf::$TARG.tex $CHAPTERS
 
 epub::$TARG.tex $CHAPTERS
         go run consolidate.go -i $TARG.tex -o ${TARG}_epub.tex
-        pandoc -o $TARG.epub ${TARG}_epub.tex
+        pandoc --toc --epub-cover-image=cover.png       \
+                --epub-metadata=epub_metadata.xml -o    \
+                $TARG.epub ${TARG}_epub.tex
         rm ${TARG}_epub.tex
 
 clean:V:
