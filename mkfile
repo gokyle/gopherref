@@ -1,5 +1,11 @@
 TARG=gopherref
-CHAPTERS=preamble.tex effective.tex spec.tex writing.tex title.tex credits.tex
+CHAPTERS=preamble.tex           \
+         title.tex              \
+         writing.tex            \
+         effective.tex          \
+         gobs.tex               \
+         spec.tex               \
+         credits.tex
 
 all:V:pdf epub
 
