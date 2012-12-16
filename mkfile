@@ -3,6 +3,7 @@ CHAPTERS=preamble.tex           \
          title.tex              \
          writing.tex            \
          effective.tex          \
+         error_handling.tex     \
          defer.tex              \
          concurrency.tex        \
          gobs.tex               \

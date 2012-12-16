@@ -1,0 +1,384 @@
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Error Handling and Go}
+\chapter*{Error Handling and Go}
+
+If you have written any Go code you have probably encountered the
+built-in \texttt{error} type. Go code uses \texttt{error} values to
+indicate an abnormal state. For example, the \texttt{os.Open} function
+returns a non-nil \texttt{error} value when it fails to open a file.
+
+\begin{Verbatim}[frame=single]
+func Open(name string) (file *File, err error)
+\end{Verbatim}
+
+The following code uses \texttt{os.Open} to open a file. If an error
+occurs it calls \texttt{log.Fatal} to print the error message and stop.
+
+\begin{Verbatim}[frame=single]
+        f, err := os.Open("filename.ext")
+        if err != nil {
+                log.Fatal(err)
+        }
+        // do something with the open *File f
+\end{Verbatim}
+
+You can get a lot done in Go knowing just this about the \texttt{error}
+type, but in this article we'll take a closer look at \texttt{error} and
+discuss some good practices for error handling in Go.
+
+\textbf{The error type}
+
+The \texttt{error} type is an interface type. An \texttt{error} variable
+represents any value that can describe itself as a string. Here is the
+interface's declaration:
+
+\begin{Verbatim}[frame=single]
+type error interface {
+        Error() string
+}
+\end{Verbatim}
+
+The \texttt{error} type, as with all built in types, is
+\href{http://golang.org/doc/go\_spec.html\#Predeclared\_identifiers}{predeclared} in the
+\href{http://golang.org/doc/go\_spec.html\#Blocks}{universe block}.
+
+The most commonly-used \texttt{error} implementation is the
+\href{http://golang.org/pkg/errors/}{errors} package's unexported \texttt{errorString}
+type.
+
+\begin{Verbatim}[frame=single]
+// errorString is a trivial implementation of error.
+type errorString struct {
+        s string
+}
+
+func (e *errorString) Error() string {
+        return e.s
+}
+\end{Verbatim}
+
+You can construct one of these values with the \texttt{errors.New}
+function. It takes a string that it converts to an
+\texttt{errors.errorString} and returns as an \texttt{error} value.
+
+\begin{Verbatim}[frame=single]
+// New returns an error that formats as the given text.
+func New(text string) error {
+        return &errorString{text}
+}
+\end{Verbatim}
+
+Here's how you might use \texttt{errors.New}:
+
+\begin{Verbatim}[frame=single]
+func Sqrt(f float64) (float64, error) {
+        if f < 0 {
+                return 0, errors.New("math: square root of negative number")
+        }
+        // implementation
+}
+\end{Verbatim}
+
+A caller passing a negative argument to \texttt{Sqrt} receives a non-nil
+\texttt{error} value (whose concrete representation is an
+\texttt{errors.errorString} value). The caller can access the error
+string (``math: square root of\ldots{}'') by calling the
+\texttt{error}'s \texttt{Error} method, or by just printing it:
+
+\begin{Verbatim}[frame=single]
+        f, err := Sqrt(-1)
+        if err != nil {
+                fmt.Println(err)
+        }
+\end{Verbatim}
+
+The \href{http://golang.org/pkg/fmt/}{fmt} package formats an
+\texttt{error} value by calling its \texttt{Error() string} method.
+
+It is the error implementation's responsibility to summarize the
+context. The error returned by \texttt{os.Open} formats as ``open
+/etc/passwd: permission denied,'' not just ``permission denied.''
+The error returned by our \texttt{Sqrt} is missing information about
+the invalid argument.
+
+To add that information, a useful function is the \texttt{fmt}
+package's \texttt{Errorf}. It formats a string according to
+\texttt{Printf}'s rules and returns it as an \texttt{error} created
+by \texttt{errors.New}.
+
+\begin{Verbatim}[frame=single]
+        if f < 0 {
+                return 0, fmt.Errorf("math: square root of negative number %g", f)
+        }
+\end{Verbatim}
+
+In many cases \texttt{fmt.Errorf} is good enough, but since
+\texttt{error} is an interface, you can use arbitrary data structures as
+error values, to allow callers to inspect the details of the error.
+
+For instance, our hypothetical callers might want to recover the invalid
+argument passed to \texttt{Sqrt}. We can enable that by defining a new
+error implementation instead of using \texttt{errors.errorString}:
+
+\begin{Verbatim}[frame=single]
+type NegativeSqrtError float64
+
+func (f NegativeSqrtError) Error() string {
+        return fmt.Sprintf("math: square root of negative number %g", float64(f))
+}
+\end{Verbatim}
+
+A sophisticated caller can then use a
+\href{http://golang.org/doc/go\_spec.html\#Type\_assertions}{type
+assertion} to check for a \texttt{NegativeSqrtError} and handle it
+specially, while callers that just pass the error to \texttt{fmt.Println}
+or \texttt{log.Fatal} will see no change in behavior.
+
+As another example, the \href{http://golang.org/pkg/encoding/json/}{json}
+package specifies a \texttt{SyntaxError} type that the \texttt{json.Decode}
+function returns when it encounters a syntax error parsing a JSON
+blob.
+
+\begin{Verbatim}[frame=single]
+type SyntaxError struct {
+        msg    string // description of error
+        Offset int64  // error occurred after reading Offset bytes
+}
+
+func (e *SyntaxError) Error() string { return e.msg }
+\end{Verbatim}
+
+The \texttt{Offset} field isn't even shown in the default formatting of
+the error, but callers can use it to add file and line information to
+their error messages:
+
+\begin{Verbatim}[frame=single]
+        if err := dec.Decode(&val); err != nil {
+                if serr, ok := err.(*json.SyntaxError); ok {
+                        line, col := findLine(f, serr.Offset)
+                        return fmt.Errorf("%s:%d:%d: %v", f.Name(), line, col, err)
+                }
+                return err
+        }
+\end{Verbatim}
+
+(This is a slightly simplified version of some
+\href{http://camlistore.org/code/?p=camlistore.git;a=blob;f=lib/go/camli/jsonconfig/eval.go\#l68}{actual
+code} from the \href{http://camlistore.org}{Camlistore} project.)
+
+The \texttt{error} interface requires only a \texttt{Error} method;
+specific error implementations might have additional methods. For
+instance, the \href{http://golang.org/pkg/net/}{net} package returns errors of type
+\texttt{error}, following the usual convention, but some of the error
+implementations have additional methods defined by the
+\texttt{net.Error} interface:
+
+\begin{Verbatim}[frame=single]
+package net
+
+type Error interface {
+    error
+    Timeout() bool   // Is the error a timeout?
+    Temporary() bool // Is the error temporary?
+}
+\end{Verbatim}
+
+Client code can test for a \texttt{net.Error} with a type assertion and
+then distinguish transient network errors from permanent ones. For
+instance, a web crawler might sleep and retry when it encounters a
+temporary error and give up otherwise.
+
+\begin{Verbatim}[frame=single]
+        if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
+                time.Sleep(1e9)
+                continue
+        }
+        if err != nil {
+                log.Fatal(err)
+        }
+\end{Verbatim}
+
+\section*{Simplifying repetitive error handling}
+
+In Go, error handling is important. The language's design and
+conventions encourage you to explicitly check for errors where they
+occur (as distinct from the convention in other languages of throwing
+exceptions and sometimes catching them). In some cases this makes Go
+code verbose, but fortunately there are some techniques you can use to
+minimize repetitive error handling.
+
+Consider an \href{http://code.google.com/appengine/docs/go/}{App Engine}
+application with an HTTP handler that retrieves a record from the
+datastore and formats it with a template.
+
+\begin{Verbatim}[frame=single]
+func init() {
+        http.HandleFunc("/view", viewRecord)
+}
+
+func viewRecord(w http.ResponseWriter, r *http.Request) {
+        c := appengine.NewContext(r)
+        key := datastore.NewKey(c, "Record", r.FormValue("id"), 0, nil)
+        record := new(Record)
+        if err := datastore.Get(c, key, record); err != nil {
+                http.Error(w, err.Error(), 500)
+                return
+        }
+        if err := viewTemplate.Execute(w, record); err != nil {
+                http.Error(w, err.Error(), 500)
+        }
+}
+\end{Verbatim}
+
+This function handles errors returned by the \texttt{datastore.Get}
+function and \texttt{viewTemplate}'s \texttt{Execute} method. In both
+cases, it presents a simple error message to the user with the HTTP
+status code 500 (``Internal Server Error''). This looks like a
+manageable amount of code, but add some more HTTP handlers and you
+quickly end up with many copies of identical error handling code.
+
+To reduce the repetition we can define our own HTTP \texttt{appHandler}
+type that includes an \texttt{error} return value:
+
+\begin{Verbatim}[frame=single]
+type appHandler func(http.ResponseWriter, *http.Request) error
+\end{Verbatim}
+
+Then we can change our \texttt{viewRecord} function to return errors:
+
+\begin{Verbatim}[frame=single]
+func viewRecord(w http.ResponseWriter, r *http.Request) error {
+        c := appengine.NewContext(r)
+        key := datastore.NewKey(c, "Record", r.FormValue("id"), 0, nil)
+        record := new(Record)
+        if err := datastore.Get(c, key, record); err != nil {
+                return err
+        }
+        return viewTemplate.Execute(w, record)
+}
+\end{Verbatim}
+
+This is simpler than the original version, but the
+\href{http://golang.org/pkg/net/http/}{http} package doesn't understand functions that
+return \texttt{error}. To fix this we can implement the
+\texttt{http.Handler} interface's \texttt{ServeHTTP} method on
+\texttt{appHandler}:
+
+\begin{Verbatim}[frame=single]
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        if err := fn(w, r); err != nil {
+                http.Error(w, err.Error(), 500)
+        }
+}
+\end{Verbatim}
+
+The \texttt{ServeHTTP} method calls the \texttt{appHandler} function and
+displays the returned error (if any) to the user. Notice that the
+method's receiver, \texttt{fn}, is a function. (Go can do that!) The
+method invokes the function by calling the receiver in the expression
+\texttt{fn(w, r)}.
+
+Now when registering \texttt{viewRecord} with the http package we use
+the \texttt{Handle} function (instead of \texttt{HandleFunc}) as
+\texttt{appHandler} is an \texttt{http.Handler} (not an
+\texttt{http.HandlerFunc}).
+
+\begin{Verbatim}[frame=single]
+func init() {
+        http.Handle("/view", appHandler(viewRecord))
+}
+\end{Verbatim}
+
+With this basic error handling infrastructure in place, we can make it
+more user friendly. Rather than just displaying the error string, it
+would be better to give the user a simple error message with an
+appropriate HTTP status code, while logging the full error to the App
+Engine developer console for debugging purposes.
+
+To do this we create an \texttt{appError} struct containing an
+\texttt{error} and some other fields:
+
+\begin{Verbatim}[frame=single]
+type appError struct {
+        Error   error
+        Message string
+        Code    int
+}
+\end{Verbatim}
+
+Next we modify the appHandler type to return \texttt{*appError} values:
+
+\begin{Verbatim}[frame=single]
+type appHandler func(http.ResponseWriter, *http.Request) *appError
+\end{Verbatim}
+
+(It's usually a mistake to pass back the concrete type of an error
+rather than \texttt{error}, for reasons discussed in
+\href{http://golang.org/doc/go\_faq.html\#nil\_error}{the Go FAQ}, but it's the right
+thing to do here because \texttt{ServeHTTP} is the only place that sees
+the value and uses its contents.)
+
+And make \texttt{appHandler}'s \texttt{ServeHTTP} method display the
+\texttt{appError}'s \texttt{Message} to the user with the correct HTTP
+status \texttt{Code} and log the full \texttt{Error} to the developer
+console:
+
+\begin{Verbatim}[frame=single]
+func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        if e := fn(w, r); e != nil { // e is *appError, not os.Error.
+                c := appengine.NewContext(r)
+                c.Errorf("%v", e.Error)
+                http.Error(w, e.Message, e.Code)
+        }
+}
+\end{Verbatim}
+
+Finally, we update \texttt{viewRecord} to the new function signature and
+have it return more context when it encounters an error:
+
+\begin{Verbatim}[frame=single]
+func viewRecord(w http.ResponseWriter, r *http.Request) *appError {
+    c := appengine.NewContext(r)
+    key := datastore.NewKey(c, "Record", r.FormValue("id"), 0, nil)
+    record := new(Record)
+    if err := datastore.Get(c, key, record); err != nil {
+        return &appError{err, "Record not found", 404}
+    }
+    if err := viewTemplate.Execute(w, record); err != nil {
+        return &appError{err, "Can't display record", 500}
+    }
+    return nil
+}
+\end{Verbatim}
+
+This version of \texttt{viewRecord} is the same length as the original,
+but now each of those lines has specific meaning and we are providing a
+friendlier user experience.
+
+It doesn't end there; we can further improve the error handling in our
+application. Some ideas:
+
+\begin{itemize}
+\item
+  give the error handler a pretty HTML template,
+\item
+  make debugging easier by writing the stack trace to the HTTP response
+  when the user is an administrator,
+\item
+  write a constructor function for \texttt{appError} that stores the
+  stack trace for easier debugging,
+\item
+  recover from panics inside the \texttt{appHandler}, logging the error
+  to the console as ``Critical,'' while telling the user ``a serious
+  error has occurred.'' This is a nice touch to avoid exposing the user
+  to inscrutable error messages caused by programming errors. See the
+  \href{defer\_panic\_recover.html}{Defer, Panic, and Recover} article
+  for more details.
+\end{itemize}
+
+\section*{Conclusion}
+
+Proper error handling is an essential requirement of good software. By
+employing the techniques described in this post you should be able to
+write more reliable and succinct Go code.
